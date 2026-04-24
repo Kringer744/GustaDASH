@@ -43,7 +43,7 @@ function getPrevRange(dr = DEFAULT_RANGE) {
 async function getAccountInfo(id) {
   const { data } = await api.get(`/${actId(id)}`, {
     params: {
-      fields: 'id,name,balance,currency,currency_offset,account_status,spend_cap,amount_spent',
+      fields: 'id,name,balance,currency,account_status,spend_cap,amount_spent',
       access_token: META_TOKEN,
     },
   })
@@ -156,8 +156,8 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
       getPrevPeriodMetrics(account.id, dr),
     ])
 
-    // Use currency_offset from Meta API to correctly convert minor units to major
-    const offset = parseInt(info.currency_offset) || 100
+    // Meta returns balance/amount_spent in minor currency units (centavos for BRL = /100)
+    const offset = 100
 
     const normalizedCampaigns = campaigns.map((c) => {
       const ins = c.insights?.data?.[0] || {}
