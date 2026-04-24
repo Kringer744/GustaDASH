@@ -147,10 +147,17 @@ function FilterBar({ accounts, selected, onChange, onPdfExport }) {
       </div>
 
       {current && (
-        <button onClick={() => onChange(null)}
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors"
-          style={{ background: 'rgba(74,222,128,0.1)', color: '#4ADE80', border: '1px solid rgba(74,222,128,0.2)' }}>
-          {current.name} <X size={12} />
+        <button onClick={() => onChange(null)} title="Limpar filtro de conta"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 30, height: 30, borderRadius: '0.625rem', flexShrink: 0,
+            background: 'rgba(239,68,68,0.08)', color: '#F87171',
+            border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)' }}>
+          <X size={13} />
         </button>
       )}
 
