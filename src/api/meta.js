@@ -139,10 +139,10 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
 
     return {
       id: account.id, name: account.name,
-      balance: parseFloat(info.balance) || 0,
+      balance: (parseFloat(info.balance) || 0) / 100,
       currency: info.currency || 'BRL',
       accountStatus: info.account_status,
-      amountSpent: parseFloat(info.amount_spent) || 0,
+      amountSpent: (parseFloat(info.amount_spent) || 0) / 100,
       metrics: totals,
       prevMetrics,
       campaigns: normalizedCampaigns,
