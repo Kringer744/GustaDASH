@@ -19,7 +19,7 @@ export const AD_ACCOUNTS = [
   { name: 'Joy Variedades', id: '2082050112405588' },
 ]
 
-export const META_API_VERSION = 'v19.0'
+export const META_API_VERSION = 'v21.0'
 export const META_API_BASE = `https://graph.facebook.com/${META_API_VERSION}`
 export const REFRESH_INTERVAL = 5 * 60 * 1000
 export const THRESHOLDS_KEY = 'meta_balance_thresholds'
