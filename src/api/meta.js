@@ -193,10 +193,14 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
       getPrevPeriodMetrics(account.id, dr),
     ])
 
-    // Meta returns balance and amount_spent in minor currency units (centavos for BRL).
-    // Dividing by 100 converts centavos → reais.
-    const balance     = (parseFloat(info.balance)      || 0) / 100
-    const amountSpent = (parseFloat(info.amount_spent)  || 0) / 100
+    // Meta Graph API v21 returns balance and amount_spent in the account's
+    // display currency already (e.g. "1391.34" for R$ 1.391,34).
+    // Log raw values to aid debugging — remove after validating.
+    if (typeof window !== 'undefined' && window.__GUSTA_DEBUG__) {
+      console.log(`[${account.name}] raw balance=${info.balance}  raw amount_spent=${info.amount_spent}  currency=${info.currency}`)
+    }
+    const balance     = parseFloat(info.balance)      || 0
+    const amountSpent = parseFloat(info.amount_spent)  || 0
 
     const normalizedCampaigns = campaigns.map((c) => {
       const ins = c.insights?.data?.[0] || {}
