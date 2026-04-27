@@ -12,7 +12,7 @@ import ActiveAdsGrid from '../components/ActiveAdsGrid'
 import LoadingSpinner from '../components/LoadingSpinner'
 import PdfExportModal from '../components/PdfExportModal'
 import DateRangePicker from '../components/DateRangePicker'
-import { DollarSign, Eye, MousePointer, Activity, Wallet, ChevronDown, X, FileText } from 'lucide-react'
+import { DollarSign, Eye, MousePointer, Activity, Wallet, ChevronDown, X, FileText, Users, MessageCircle } from 'lucide-react'
 
 function pctDelta(curr, prev) {
   if (!prev || prev === 0) return null
@@ -189,12 +189,14 @@ function AggregatedView({ accounts }) {
       acc.clicks      += a.metrics.clicks
       acc.balance     += a.balance
       acc.activeAds   += a.activeAds.length
+      acc.leads       += a.metrics.leads || 0
+      acc.conversations += a.metrics.conversations || 0
       acc.prevSpend   += a.prevMetrics?.spend || 0
       acc.prevImpressions += a.prevMetrics?.impressions || 0
       acc.prevClicks  += a.prevMetrics?.clicks || 0
       return acc
     },
-    { spend: 0, impressions: 0, clicks: 0, balance: 0, activeAds: 0, prevSpend: 0, prevImpressions: 0, prevClicks: 0 }
+    { spend: 0, impressions: 0, clicks: 0, balance: 0, activeAds: 0, leads: 0, conversations: 0, prevSpend: 0, prevImpressions: 0, prevClicks: 0 }
   ), [accounts])
 
   const ctr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0
@@ -238,6 +240,21 @@ function AggregatedView({ accounts }) {
           sub={`CTR médio: ${formatPercent(ctr)}`}
           icon={MousePointer} delta={pctDelta(totals.clicks, totals.prevClicks)} />
       </div>
+
+      {(totals.leads > 0 || totals.conversations > 0) && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {totals.leads > 0 && (
+            <MetricCard label="Leads" value={formatNumber(totals.leads)}
+              sub={totals.spend > 0 ? `CPL médio: ${formatCurrency(totals.spend / totals.leads)}` : null}
+              icon={Users} />
+          )}
+          {totals.conversations > 0 && (
+            <MetricCard label="Conversas iniciadas" value={formatNumber(totals.conversations)}
+              sub={totals.spend > 0 ? `Custo médio: ${formatCurrency(totals.spend / totals.conversations)}` : null}
+              icon={MessageCircle} />
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2"><DonutChart campaigns={allCampaigns} currency="BRL" /></div>
@@ -311,6 +328,25 @@ function AccountView({ account }) {
           sub={`CPC: ${formatCurrency(account.metrics.cpc, account.currency)}`}
           icon={Activity} />
       </div>
+
+      {(account.metrics.leads > 0 || account.metrics.conversations > 0) && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {account.metrics.leads > 0 && (
+            <MetricCard label="Leads" value={formatNumber(account.metrics.leads)}
+              sub={account.metrics.costPerLead > 0
+                ? `CPL: ${formatCurrency(account.metrics.costPerLead, account.currency)}`
+                : null}
+              icon={Users} />
+          )}
+          {account.metrics.conversations > 0 && (
+            <MetricCard label="Conversas iniciadas" value={formatNumber(account.metrics.conversations)}
+              sub={account.metrics.costPerConversation > 0
+                ? `Custo: ${formatCurrency(account.metrics.costPerConversation, account.currency)}`
+                : null}
+              icon={MessageCircle} />
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2"><DonutChart campaigns={account.campaigns} currency={account.currency} /></div>
