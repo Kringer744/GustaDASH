@@ -58,12 +58,14 @@ function insightParams(dr) {
 }
 
 // ─── Account info ────────────────────────────────────────────
-// balance and amount_spent are returned in the currency's minor unit (centavos for BRL).
-// Divide by 100 to get the display value in BRL.
+// balance, amount_spent and spend_cap come in the currency's minor unit (centavos for BRL).
+// - Pré-paga: balance > 0 → saldo = balance / 100
+// - Pós-paga: balance = 0 e spend_cap > 0 → saldo = (spend_cap - amount_spent) / 100
+// - Pós-paga sem cap (spend_cap = 0) → não há "saldo disponível", mostra apenas amount_spent
 async function getAccountInfo(id) {
   const { data } = await api.get(`/${actId(id)}`, {
     params: {
-      fields: 'id,name,balance,currency,account_status,amount_spent',
+      fields: 'id,name,balance,currency,account_status,amount_spent,spend_cap,disable_reason,funding_source_details',
       access_token: META_TOKEN,
     },
   })
@@ -193,14 +195,27 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
       getPrevPeriodMetrics(account.id, dr),
     ])
 
-    // Meta Graph API v21 returns balance and amount_spent in the account's
-    // display currency already (e.g. "1391.34" for R$ 1.391,34).
-    // Log raw values to aid debugging — remove after validating.
+    // Meta retorna balance, amount_spent e spend_cap em centavos (minor unit).
+    // Saldo disponível depende do tipo da conta:
+    //   - Pré-paga (boleto/Pix): balance > 0 → saldo = balance / 100
+    //   - Pós-paga com cap: balance = 0 → saldo = (spend_cap - amount_spent) / 100
+    //   - Pós-paga sem cap (spend_cap = 0): não há saldo, mostra 0
+    const rawBalance   = parseFloat(info.balance)     || 0
+    const rawSpent     = parseFloat(info.amount_spent) || 0
+    const rawSpendCap  = parseFloat(info.spend_cap)   || 0
+
     if (typeof window !== 'undefined' && window.__GUSTA_DEBUG__) {
-      console.log(`[${account.name}] raw balance=${info.balance}  raw amount_spent=${info.amount_spent}  currency=${info.currency}`)
+      console.log(`[${account.name}] balance=${info.balance} amount_spent=${info.amount_spent} spend_cap=${info.spend_cap} currency=${info.currency} status=${info.account_status}`)
     }
-    const balance     = parseFloat(info.balance)      || 0
-    const amountSpent = parseFloat(info.amount_spent)  || 0
+
+    let balance = 0
+    if (rawBalance > 0) {
+      balance = rawBalance / 100
+    } else if (rawSpendCap > 0) {
+      balance = Math.max(0, (rawSpendCap - rawSpent) / 100)
+    }
+    const amountSpent = rawSpent / 100
+    const spendCap    = rawSpendCap / 100
 
     const normalizedCampaigns = campaigns.map((c) => {
       const ins = c.insights?.data?.[0] || {}
@@ -232,6 +247,9 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
       balance,
       currency:      info.currency || 'BRL',
       accountStatus: info.account_status,
+      disableReason: info.disable_reason,
+      fundingSource: info.funding_source_details?.display_string || null,
+      spendCap,
       amountSpent,
       metrics:       accountInsights,
       prevMetrics,
