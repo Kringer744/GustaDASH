@@ -179,6 +179,16 @@ function normalize(d) {
   }
 }
 
+// Parse "Saldo disponível (R$30,77 BRL)" → 30.77
+function parseFundingBalance(displayString) {
+  if (!displayString) return null
+  const m = displayString.match(/R\$\s*([\d.]+),(\d{2})/)
+  if (!m) return null
+  const reais = parseInt(m[1].replace(/\./g, '')) || 0
+  const cents = parseInt(m[2]) || 0
+  return reais + cents / 100
+}
+
 function emptyMetrics() {
   return { spend: 0, impressions: 0, clicks: 0, ctr: 0, cpc: 0, cpm: 0, reach: 0 }
 }
@@ -204,12 +214,15 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
     const rawSpent     = parseFloat(info.amount_spent) || 0
     const rawSpendCap  = parseFloat(info.spend_cap)   || 0
 
-    if (typeof window !== 'undefined' && window.__GUSTA_DEBUG__) {
-      console.log(`[${account.name}] balance=${info.balance} amount_spent=${info.amount_spent} spend_cap=${info.spend_cap} currency=${info.currency} status=${info.account_status}`)
-    }
+    // Fonte de verdade: funding_source_details.display_string traz o "Saldo disponível"
+    // exatamente como o Meta Ads Manager mostra (ex: "Saldo disponível (R$30,77 BRL)").
+    // Os campos balance/spend_cap da API têm reservas/holds que divergem da UI.
+    const displayBalance = parseFundingBalance(info.funding_source_details?.display_string)
 
     let balance = 0
-    if (rawBalance > 0) {
+    if (displayBalance !== null) {
+      balance = displayBalance
+    } else if (rawBalance > 0) {
       balance = rawBalance / 100
     } else if (rawSpendCap > 0) {
       balance = Math.max(0, (rawSpendCap - rawSpent) / 100)
