@@ -79,7 +79,7 @@ function AccountBalanceCard({ acc, threshold }) {
           <div className="flex items-end justify-between">
             <div>
               <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-secondary)' }}>
-                Saldo disponível
+                {acc.balanceLabel || 'Saldo disponível'}
               </p>
               <p className="text-2xl font-bold"
                 style={{ color: isCritical ? '#F87171' : isLow ? '#FBBF24' : 'var(--text-primary)' }}>

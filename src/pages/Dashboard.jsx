@@ -289,7 +289,7 @@ function AccountView({ account }) {
         </div>
         <div className="flex items-center gap-8">
           <div>
-            <p className="text-[11px] uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-secondary)' }}>Saldo disponível</p>
+            <p className="text-[11px] uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-secondary)' }}>{account.balanceLabel || 'Saldo disponível'}</p>
             <p className="text-2xl font-bold" style={{ color: '#4ADE80' }}>{formatCurrency(account.balance, account.currency)}</p>
           </div>
           <div>

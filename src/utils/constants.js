@@ -5,7 +5,10 @@ export const AD_ACCOUNTS = [
   { name: 'Ae Virtual', id: '1628986774598556' },
   { name: 'All Beefs Santos', id: '1489245389283252' },
   { name: 'All Beefs PG', id: '6994991470562597' },
-  { name: 'IMPERIO FITNESS', id: '206276071547845' },
+  // IMPERIO usa cartão + carteira "Fundos" pré-paga. A API do Meta só expõe o
+  // saldo da fatura (balance), não os Fundos. balanceLabel renomeia o card e
+  // manualBalance permite override manual quando o cliente recarrega.
+  { name: 'IMPERIO FITNESS', id: '206276071547845', balanceLabel: 'Fundos', manualBalance: 483.30 },
   { name: 'Caio Passeio de Cães', id: '1618135212805210' },
   { name: 'CA 01 - Confiatta', id: '1595353108381362' },
   { name: 'Corretora Luzia', id: '2458491964589198' },

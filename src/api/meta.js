@@ -220,7 +220,10 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
     const displayBalance = parseFundingBalance(info.funding_source_details?.display_string)
 
     let balance = 0
-    if (displayBalance !== null) {
+    if (typeof account.manualBalance === 'number') {
+      // Override manual (ex: IMPERIO usa carteira "Fundos" que a API não expõe)
+      balance = account.manualBalance
+    } else if (displayBalance !== null) {
       balance = displayBalance
     } else if (rawBalance > 0) {
       balance = rawBalance / 100
@@ -257,6 +260,7 @@ export async function fetchAccountData(account, dr = DEFAULT_RANGE) {
     return {
       id:            account.id,
       name:          account.name,
+      balanceLabel:  account.balanceLabel || 'Saldo disponível',
       balance,
       currency:      info.currency || 'BRL',
       accountStatus: info.account_status,
